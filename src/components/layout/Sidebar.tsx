@@ -1,12 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { Calendar, Utensils, UserCog, Home, LogOut } from 'lucide-react';
+import { InfoIcon, Utensils, UserCog, Home, LogOut, DockIcon } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: Home },
-  { to: '/reservations', label: 'Reservations', icon: Calendar },
-  { to: '/shifts', label: 'Shift', icon: Utensils },
-  { to: '/employees', label: 'Employees', icon: UserCog }
+  { to: '/doctors', label: 'Doctors', icon: DockIcon },
+  { to: '/emergency', label: 'Civic', icon: InfoIcon },
+  { to: '/users', label: 'User', icon: UserCog }
 ];
 
 export default function Sidebar() {
@@ -16,7 +16,7 @@ export default function Sidebar() {
     <aside className="w-64 bg-sky-700 text-white flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-sky-600">
-        <h1 className="text-2xl font-bold">XYZ Restaurant</h1>
+        <h1 className="text-2xl font-bold">InfoTreeBD</h1>
         <p className="text-sky-200 text-sm">Management</p>
       </div>
 

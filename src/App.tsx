@@ -1,25 +1,17 @@
 // src/app/App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { lazy, Suspense, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore'
 import { getProfile } from '@/api/authApi';
 import ProtectedRoute from '@/components/common/protectedRoute';
 import DashboardLayout from '@/app/routes/dashboard.layout';
 import Dashboard from './app/routes/DashboardPage';
 import LoginPage from '@/app/routes/auth/LoginPage';
-import ReservationsPage from './app/routes/reservations/ReservationsPage';
-import EmployeesPage from './app/routes/employees/EmployeesPage';
-import ShiftPage from './app/routes/shifts/ShiftPage';
-import EmployeeDetailsPage from './app/routes/employees/EmployeeDetailsPage';
+import DoctorPage from './app/routes/doctors/DoctorsPage';
+import CivicPage from './app/routes/civic/CivicPage';
+import UsersPage from './app/routes/users/UsersPage';
+import UserDetailsPage from './app/routes/users/UserDetailsPage';
 
-// Lazy-load pages for better performance
-const OrdersPage = lazy(() => import('@/app/routes/orders/OrdersPage'));
-// const ReservationsPage = lazy(() => import('./routes/reservations/ReservationsPage'));
-// const MenuPage = lazy(() => import('./routes/menu/MenuPage'));
-// const EmployeesPage = lazy(() => import('./routes/employees/EmployeesPage'));
-// const UsersPage = lazy(() => import('./routes/users/UsersPage'));
-
-// Optional: Ensure user profile is loaded on app start if tokens exist
 function AuthLoader() {
   const { tokens, user, login } = useAuthStore();
 
@@ -101,43 +93,34 @@ export default function App() {
             }
           />
           <Route
-            path="reservations"
+            path="doctors"
             element={
               <Suspense fallback={<PageLoading />}>
-                <ReservationsPage />
+                <DoctorPage />
               </Suspense>
             }
           />
           <Route
-            path="shifts"
+            path="emergency"
             element={
               <Suspense fallback={<PageLoading />}>
-                <ShiftPage />
+                <CivicPage />
               </Suspense>
             }
           />
-          <Route
-            path="employees"
-            element={
-              <Suspense fallback={<PageLoading />}>
-                <EmployeesPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="employees/:id"
-            element={
-              <Suspense fallback={<PageLoading />}>
-                <EmployeeDetailsPage />
-              </Suspense>
-            }
-          />
-
           <Route
             path="users"
             element={
               <Suspense fallback={<PageLoading />}>
-                <OrdersPage />
+                <UsersPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="users/:id"
+            element={
+              <Suspense fallback={<PageLoading />}>
+                <UserDetailsPage />
               </Suspense>
             }
           />

@@ -6,92 +6,86 @@ import {
 } from 'lucide-react';
 
 import Card from '@/components/ui/Card';
-import { getReservations } from '@/api/reservationApi';
 import { useState, useEffect } from 'react';
-import type { ReservationPage } from '@/types/reservation.types';
-import { getShifts } from '@/api/shiftApi';
-import { ShiftResponse } from '@/types/shift.types';
-import { EmployeePage } from '@/types/employee.types';
-import { getEmployees } from '@/api/employeeApi';
-
+import { UserPage } from '@/types/user.types';
+import type { Doctor, PaginatedResponse } from "@/types/doctor.types";
+import { getUsers } from '@/api/userApi';
+import { getDoctors } from '@/api/doctorApi';
+import { Civic } from '@/types/civic.types';
+import { getCivics } from '@/api/civicApi';
 export default function Dashboard() {
   const navigate = useNavigate();  
-
-  const [todayStats, setTodayStats] = useState({
-    totalToday: 0, pending: 0, confirmed: 0, seated: 0,
-  });
   const [loading, setLoading] = useState(true);
-  const [shift, setShift] = useState<ShiftResponse>();
-  const [employee, setEmployee] = useState<EmployeePage>();
+  const [doctors, setDoctors] = useState<PaginatedResponse<Doctor> | null>(null);
+  const [civic, setCivic] = useState<PaginatedResponse<Civic> | null>(null);
+  const [user, setUser] = useState<UserPage>();
 
+  
   useEffect(() => {
-    const fetchTodayStats = async () => {
-      try {
-        setLoading(true);
-        const today = format(new Date(), 'yyyy-MM-dd');
-        const data: ReservationPage = await getReservations({ page: 0, size: 100 });
-        const todayReservations = data.content.filter(r => r.reservationDate === today);
-        setTodayStats({
-          totalToday: todayReservations.length,
-          pending: todayReservations.filter(r => r.status === 'PENDING').length,
-          confirmed: todayReservations.filter(r => r.status === 'CONFIRMED').length,
-          seated: todayReservations.filter(r => r.status === 'SEATED').length,
-        });
-      } catch (err) {
-        console.error('Failed to load today stats', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTodayStats();
-  }, []);
-  useEffect(() => {
-    fetchShifts();
-    fetchEmployees();
+    fetchDoctors();
+    fetchUsers();
+    fetchEmergencyInfo();
   }, []);
 
-  const fetchEmployees = async () => {
+  const fetchUsers = async () => {
       try {
-        const response = await getEmployees({
+        const response = await getUsers({
           page: 1,
           size: 1000,}
         );
-        setEmployee(response || []);
+        setUser(response || []);
       } catch (err) {
-        alert('Failed to load employees');
+        alert('Failed to load users');
       } finally {
         setLoading(false);
       }
     };
 
-  const fetchShifts = async () => {
+  const fetchDoctors = async () => {
           try {
             const today = format(new Date(), 'yyyy-MM-dd');
-            const response = await getShifts({
+            const response = await getDoctors({
               page: 1,
-              size: 100,
-              shiftDate: today
+              size: 100
             }
             );
-            setShift(response || []);
+            setDoctors(response || []);
 
           } catch (err) {
-            alert('Failed to load employees');
+            alert('Failed to load doctors');
           } finally {
             setLoading(false);
           }
         };
 
+       const fetchEmergencyInfo = async () => {
+          try {
+                setLoading(true);
+                const res = await getCivics({
+                  page: 0,
+                  size: 1000
+     });
+                if (!res) throw new Error("Failed to fetch civic data");
+                setCivic(res);
+              } catch (err: any) {
+                console.error(err);
+                setCivic(null);
+              } finally {
+                setLoading(false);
+              }
+        }
+
+  
   const quickLinks = [
-    { title: 'Reservations', icon: Calendar, description: 'Manage all bookings', link: '/reservations', stats: `${todayStats.totalToday} today`, highlight: true },
-    { title: 'Shifts', icon: Clock, description: 'View and assign staff shifts', link: '/shifts', stats: `${shift?.totalElements} today` },
-    { title: 'Employees', icon: Users, description: 'Staff list & attendance', link: '/employees', stats: `Total employee ${employee?.totalElements}` },
+    { title: 'Doctors', icon: Calendar, description: 'Manage all doctor lists', link: '/doctors', stats: `${doctors?.totalElements} total`, highlight: true },
+    { title: 'Emergency', icon: Clock, description: 'Manage emergency information', link: '/emergency', stats: `${civic?.totalElements} today` },
+    { title: 'Users', icon: Users, description: 'Users', link: '/users', stats: `Total users ${user?.totalElements}` },
   ];
 
   const todayHighlights = [
-    { label: 'Pending', value: todayStats.pending, icon: AlertCircle, color: 'text-yellow-600 bg-yellow-50' },
-    { label: 'Confirmed', value: todayStats.confirmed, icon: UserCheck, color: 'text-green-600 bg-green-50' },
-    { label: 'Seated', value: todayStats.seated, icon: TrendingUp, color: 'text-sky-600 bg-sky-50' },
+    { label: 'Doctor Entry', value: doctors?.totalElements, icon: AlertCircle, color: 'text-yellow-600 bg-yellow-50' },
+    { label: 'Emergency Entry', value: civic?.totalElements, icon: UserCheck, color: 'text-green-600 bg-green-50' },
+    { label: 'Hospital Entry', value: user?.totalElements, icon: TrendingUp, color: 'text-sky-600 bg-sky-50' },
   ];
 
   const handleNav = (path: string) => navigate(path);  // Reusable
@@ -105,11 +99,11 @@ export default function Dashboard() {
           <p className="text-gray-600 mt-1">Welcome back! Here's what's happening today.</p>
         </div>
         <button
-          onClick={() => handleNav('/reservations')}
+          onClick={() => handleNav('/doctors')}
           className="flex items-center gap-2 bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition"
         >
           <Plus className="w-5 h-5" />
-          New Reservation
+          New Doctor Entry
         </button>
       </div>
 
@@ -161,9 +155,9 @@ export default function Dashboard() {
       <Card className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Tip</h2>
         <p className="text-gray-600">
-          You have <span className="font-semibold text-yellow-600">{todayStats.pending} pending reservations</span> for today.{' '}
+          You have <span className="font-semibold text-yellow-600">{civic?.totalElements} pending information</span> for today.{' '}
           <button
-            onClick={() => handleNav('/reservations')}
+            onClick={() => handleNav('/emergency')}
             className="text-sky-600 hover:underline font-medium"
           >
             Review now →

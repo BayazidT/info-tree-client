@@ -1,24 +1,24 @@
-// src/app/routes/employees/EmployeesPage.tsx
 import { useState, useEffect } from 'react';
 import {Plus, Trash2, Eye,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import { getEmployees, createEmployee , deleteEmployee} from '@/api/employeeApi';
-import type { EmployeePage, EmployeeRequest } from '@/types/employee.types';
 import Card from '@/components/ui/Card';
 import { useNavigate } from 'react-router-dom';
 import { getRoles } from '@/api/roleApi';
 import { Role } from '@/types/role.types';
+import { createUser, deleteUser, getUsers } from '@/api/userApi';
+import { User } from '@/types/auth.types';
+import { UserPage, UserRequest } from '@/types/user.types';
 
 
-export default function EmployeesPage() {
+export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 10;
-  const [pageData, setPageData] = useState<EmployeePage>();
+  const [pageData, setPageData] = useState<UserPage>();
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
 
-  const [formData, setFormData] = useState<EmployeeRequest>({
+  const [formData, setFormData] = useState<UserRequest>({
     name: '',
     username: '',
     email: '',
@@ -26,19 +26,19 @@ export default function EmployeesPage() {
   });
 
   useEffect(() => {
-    fetchEmployees();
+    fetchUsers();
     fetchRoles();
   }, [currentPage]);
 
-  const fetchEmployees = async () => {
+  const fetchUsers = async () => {
     try {
-      const response = await getEmployees({
+      const response = await getUsers({
         page: currentPage,
         size: pageSize,}
       );
       setPageData(response || []);
     } catch (err) {
-      alert('Failed to load employees');
+      alert('Failed to load users');
     } finally {
       setLoading(false);
     }
@@ -46,7 +46,7 @@ export default function EmployeesPage() {
 
   const totalPages = pageData?.totalPages || 1;
   const totalElements = pageData?.totalElements || 0;
-  const employees = pageData?.content || [];
+  const users = pageData?.content || [];
   let serialNumber = currentPage * pageSize + 1; 
   var id_prefix="KAK000"
   var random_number=1;
@@ -54,7 +54,7 @@ export default function EmployeesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createEmployee(formData);
+      await createUser(formData);
       setShowForm(false);
       setFormData({
         name: '',
@@ -62,9 +62,9 @@ export default function EmployeesPage() {
         email: '',
         roleId: '',
       });
-      fetchEmployees(); // Refresh list
+      fetchUsers(); // Refresh list
     } catch (err) {
-      alert('Failed to create employee');
+      alert('Failed to create user');
     }
   };
   const fetchRoles = async () => {
@@ -76,10 +76,10 @@ export default function EmployeesPage() {
     }
   };
    const handleDelete = async (id: string) => {
-      if (!confirm('Delete this employee?')) return;
+      if (!confirm('Delete this user?')) return;
       try {
-        const res = await deleteEmployee(id);
-        fetchEmployees();
+        const res = await deleteUser(id);
+        fetchUsers();
       } catch (err) {
         alert('Failed to delete');
       }
@@ -88,28 +88,28 @@ export default function EmployeesPage() {
 
 
   if (loading) {
-    return <div className="p-8 text-center">Loading employees...</div>;
+    return <div className="p-8 text-center">Loading user...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Employees</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Users</h1>
         {!showForm && (
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-2 bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition"
         >
           <Plus className="w-5 h-5" />
-          New Employee
+          New User
         </button>
         )}
       </div>
 
-      {/* New Employee Form */}
+      {/* New User Form */}
       {showForm && (
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Create New Employee</h2>
+          <h2 className="text-xl font-semibold mb-4">Create New User</h2>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
@@ -156,7 +156,7 @@ export default function EmployeesPage() {
                 type="submit"
                 className="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700"
               >
-                Create Employee
+                Create User
               </button>
               <button
                 type="button"
@@ -176,7 +176,7 @@ export default function EmployeesPage() {
                   <thead className="bg-sky-50 border-b-2 border-sky-200">
                     <tr>
                       {[
-                        { key: 'emlpoyeeId', label: 'Employee ID' },
+                        { key: 'userId', label: 'User ID' },
                         { key: 'username', label: 'Username' },
                         { key: 'name', label: 'Name' },
                         { key: 'email', label: 'Email' },
@@ -199,14 +199,14 @@ export default function EmployeesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {employees.length === 0 ? (
+                    {users.length === 0 ? (
                       <tr>
                         <td colSpan={7} className="text-center py-12 text-gray-500">
-                          No employees found
+                          No users found
                         </td>
                       </tr>
                     ) : (
-                      employees.map((res) => (
+                      users.map((res) => (
                         <tr key={res.id} className="border-b hover:bg-sky-50 transition">
                           <td className="px-6 py-5">
                           <p className="font-medium text-gray-900">{id_prefix+random_number++}</p>
@@ -222,7 +222,7 @@ export default function EmployeesPage() {
                           </td>
                           <td className="px-6 py-5 text-right flex justify-end gap-2">
                             <button
-                                onClick={() => navigate(`/employees/${res.id}`)}
+                                onClick={() => navigate(`/users/${res.id}`)}
                               className="text-sky-600 hover:bg-sky-50 p-3 rounded-lg transition"
                               title="View details"
                             >

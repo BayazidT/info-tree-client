@@ -1,15 +1,15 @@
 // src/types/employee.types.ts
-export type EmployeeRole = 'ADMIN' | 'MANAGER' | 'STAFF';
+export type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF';
 
-export interface Employee {
+export interface User {
   id: string;
   username: string;
-  name: number;
+  name: string;
   email: string; 
 }
 
-export interface EmployeePage {
-  content: Employee[];
+export interface UserPage {
+  content: User[];
   totalElements: number;
   totalPages: number;
   pageNumber: number;
@@ -19,7 +19,7 @@ export interface EmployeePage {
   numberOfElements: number; 
 }
 
-export interface EmployeeRequest {
+export interface UserRequest {
   username: string;
   name: string;
   email: string;

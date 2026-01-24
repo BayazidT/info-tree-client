@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Package, Loader2 } from 'lucide-react';
 import { login } from '@/api/authApi';
 import { useAuthStore } from '@/store/authStore';
+import InfoTreeLogo from '@/assets/logo.png';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -36,22 +37,23 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo & Title */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-sky-600 rounded-full mb-6 shadow-lg">
-            <Package className="w-12 h-12 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900">XYZ Restaurant</h1>
-          <p className="mt-2 text-lg text-gray-600">Management System</p>
-        </div>
-
+      
         {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mt-20">
+            <div className="flex justify-center -mt-20 mb-6">
+              <div className="w-28 h-28 rounded-full bg-white shadow-lg flex items-center justify-center overflow-hidden">
+                <img
+                  src={InfoTreeLogo}
+                  alt="Info Tree BD Logo"
+                  className="w-full h-full object-contain p-3"
+                />
+              </div>
+            </div>
           <h2 className="text-2xl font-semibold text-center text-gray-800 mb-2">
             Welcome Back
           </h2>
           <p className="text-center text-gray-600 mb-8">
-            Sign in to manage your restaurant
+            Sign in to the admin portal
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -125,7 +127,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-600 mt-8">
-          © 2025 XYZ Restaurant. All rights reserved.
+          © 2026 trbtree.com. All rights reserved.
         </p>
       </div>
     </div>
