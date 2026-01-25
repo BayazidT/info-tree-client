@@ -1,5 +1,5 @@
 import React, { JSX, useEffect, useMemo, useState } from "react";
-import { Search, ExternalLink, MapPin } from "lucide-react";
+import { Plus, ExternalLink, MapPin } from "lucide-react";
 import Card from "@/components/ui/Card";
 import { getDoctors } from "@/api/doctorApi";
 import type { Doctor, PaginatedResponse } from "@/types/doctor.types";
@@ -8,9 +8,43 @@ export default function DoctorPage(): JSX.Element {
   const [pageData, setPageData] = useState<PaginatedResponse<Doctor> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 10;
+type CreateDoctor = Omit<Doctor, "id">;
+
+const [formData, setFormData] = useState<CreateDoctor>({
+    title: "",
+    firstName: "",
+    lastName: "",
+    gender: "",
+    idNumber: "",
+    address: "",
+    cityId: 0,
+    categoryId: 0,
+    privatePatientsOnly: false,
+    acceptsNewPatients: false,
+    telemedicineAvailable: false,
+    appointmentUrl: "",
+    emergencyAppointments: false,
+    consultationHours: {
+        Mo: "",
+        Di: "",
+        Mi: "",
+        Do: "",
+        Fr: "",
+        Sa: "",
+        emergency: "",
+    },
+    extraAttributes: {
+        focusAreas: [],
+        barmerAccepted: false,
+        technikerKrankenkasseAccepted: false,
+        patientReviewsAvg: 0,
+        yearsOfExperience: 0,
+    },
+});
 
   useEffect(() => {
     fetchDoctors();
@@ -32,6 +66,16 @@ export default function DoctorPage(): JSX.Element {
       setLoading(false);
     }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        
+        fetchDoctors(); // Refresh list
+      } catch (err) {
+        alert('Failed to create doctor');
+      }
+    };
 
   const doctors = pageData?.content || [];
 
@@ -55,18 +99,333 @@ export default function DoctorPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Doctors</h1>
-        <div className="w-80 relative">
-          <Search className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-          <input
-            className="w-full pl-10 pr-3 py-2 border rounded-lg"
-            placeholder="Search by name, city or focus..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") { setCurrentPage(0); fetchDoctors(); } }}
-          />
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900">Doctors</h1>
+        {!showForm && (
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-2 bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition"
+        >
+          <Plus className="w-5 h-5" />
+          New Doctor
+        </button>
+        )}
       </div>
+
+      {showForm && (
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-semibold mb-4">Create New Doctor</h2>
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+                type="text"
+                required
+                placeholder="First Name"
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                className="px-4 py-2 border rounded-lg"
+            />
+            <input
+                type="text"
+                required
+                placeholder="Last Name"
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                className="px-4 py-2 border rounded-lg"
+            />
+
+            <input
+                type="text"
+                placeholder="Title (e.g. Dr. / Prof.)"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="px-4 py-2 border rounded-lg"
+            />
+
+            <select
+                value={formData.gender ?? ""}
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                className="px-4 py-2 border rounded-lg"
+            >
+                <option value="">Gender (optional)</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+            </select>
+
+            <input
+                type="text"
+                placeholder="ID Number"
+                value={formData.idNumber}
+                onChange={(e) => setFormData({ ...formData, idNumber: e.target.value })}
+                className="px-4 py-2 border rounded-lg"
+            />
+
+            <input
+                type="text"
+                placeholder="Address"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                className="px-4 py-2 border rounded-lg"
+            />
+
+            <input
+                type="number"
+                placeholder="City ID"
+                value={String(formData.cityId ?? "")}
+                onChange={(e) => setFormData({ ...formData, cityId: Number(e.target.value) || 0 })}
+                className="px-4 py-2 border rounded-lg"
+            />
+
+            <input
+                type="number"
+                placeholder="Category ID"
+                value={String(formData.categoryId ?? "")}
+                onChange={(e) => setFormData({ ...formData, categoryId: Number(e.target.value) || 0 })}
+                className="px-4 py-2 border rounded-lg"
+            />
+
+            <input
+                type="url"
+                placeholder="Appointment URL (optional)"
+                value={formData.appointmentUrl}
+                onChange={(e) => setFormData({ ...formData, appointmentUrl: e.target.value })}
+                className="px-4 py-2 border rounded-lg"
+            />
+
+            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
+                <input
+                    id="telemed"
+                    type="checkbox"
+                    checked={formData.telemedicineAvailable}
+                    onChange={(e) => setFormData({ ...formData, telemedicineAvailable: e.target.checked })}
+                    className="w-4 h-4"
+                />
+                <label htmlFor="telemed" className="text-sm">Telemedicine Available</label>
+            </div>
+
+            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
+                <input
+                    id="privateOnly"
+                    type="checkbox"
+                    checked={formData.privatePatientsOnly}
+                    onChange={(e) => setFormData({ ...formData, privatePatientsOnly: e.target.checked })}
+                    className="w-4 h-4"
+                />
+                <label htmlFor="privateOnly" className="text-sm">Private Patients Only</label>
+            </div>
+
+            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
+                <input
+                    id="acceptsNew"
+                    type="checkbox"
+                    checked={formData.acceptsNewPatients}
+                    onChange={(e) => setFormData({ ...formData, acceptsNewPatients: e.target.checked })}
+                    className="w-4 h-4"
+                />
+                <label htmlFor="acceptsNew" className="text-sm">Accepts New Patients</label>
+            </div>
+
+            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
+                <input
+                    id="emergencyAppointments"
+                    type="checkbox"
+                    checked={formData.emergencyAppointments}
+                    onChange={(e) => setFormData({ ...formData, emergencyAppointments: e.target.checked })}
+                    className="w-4 h-4"
+                />
+                <label htmlFor="emergencyAppointments" className="text-sm">Emergency Appointments</label>
+            </div>
+
+            {/* Consultation hours */}
+            <div className="md:col-span-2 grid grid-cols-2 gap-2">
+                <input
+                    type="text"
+                    placeholder="Mo"
+                    value={formData.consultationHours?.Mo ?? ""}
+                    onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            consultationHours: { ...(formData.consultationHours || {}), Mo: e.target.value },
+                        })
+                    }
+                    className="px-4 py-2 border rounded-lg"
+                />
+                <input
+                    type="text"
+                    placeholder="Di"
+                    value={formData.consultationHours?.Di ?? ""}
+                    onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            consultationHours: { ...(formData.consultationHours || {}), Di: e.target.value },
+                        })
+                    }
+                    className="px-4 py-2 border rounded-lg"
+                />
+                <input
+                    type="text"
+                    placeholder="Mi"
+                    value={formData.consultationHours?.Mi ?? ""}
+                    onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            consultationHours: { ...(formData.consultationHours || {}), Mi: e.target.value },
+                        })
+                    }
+                    className="px-4 py-2 border rounded-lg"
+                />
+                <input
+                    type="text"
+                    placeholder="Do"
+                    value={formData.consultationHours?.Do ?? ""}
+                    onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            consultationHours: { ...(formData.consultationHours || {}), Do: e.target.value },
+                        })
+                    }
+                    className="px-4 py-2 border rounded-lg"
+                />
+                <input
+                    type="text"
+                    placeholder="Fr"
+                    value={formData.consultationHours?.Fr ?? ""}
+                    onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            consultationHours: { ...(formData.consultationHours || {}), Fr: e.target.value },
+                        })
+                    }
+                    className="px-4 py-2 border rounded-lg"
+                />
+                <input
+                    type="text"
+                    placeholder="Sa"
+                    value={formData.consultationHours?.Sa ?? ""}
+                    onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            consultationHours: { ...(formData.consultationHours || {}), Sa: e.target.value },
+                        })
+                    }
+                    className="px-4 py-2 border rounded-lg"
+                />
+                <input
+                    type="text"
+                    placeholder="Emergency Hours"
+                    value={formData.consultationHours?.emergency ?? ""}
+                    onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            consultationHours: { ...(formData.consultationHours || {}), emergency: e.target.value },
+                        })
+                    }
+                    className="px-4 py-2 border rounded-lg"
+                />
+            </div>
+
+            {/* Extra attributes */}
+            <input
+                type="text"
+                placeholder="Focus Areas (comma separated)"
+                value={(formData.extraAttributes.focusAreas || []).join(", ")}
+                onChange={(e) =>
+                    setFormData({
+                        ...formData,
+                        extraAttributes: {
+                            ...formData.extraAttributes,
+                            focusAreas: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                        },
+                    })
+                }
+                className="md:col-span-2 px-4 py-2 border rounded-lg"
+            />
+
+            <input
+                type="number"
+                min={0}
+                placeholder="Years of Experience"
+                value={String(formData.extraAttributes.yearsOfExperience ?? "")}
+                onChange={(e) =>
+                    setFormData({
+                        ...formData,
+                        extraAttributes: {
+                            ...formData.extraAttributes,
+                            yearsOfExperience: Number(e.target.value) || 0,
+                        },
+                    })
+                }
+                className="px-4 py-2 border rounded-lg"
+            />
+
+            <input
+                type="number"
+                step="0.1"
+                min={0}
+                max={5}
+                placeholder="Patient Reviews Avg (0-5)"
+                value={String(formData.extraAttributes.patientReviewsAvg ?? "")}
+                onChange={(e) =>
+                    setFormData({
+                        ...formData,
+                        extraAttributes: {
+                            ...formData.extraAttributes,
+                            patientReviewsAvg: Number(e.target.value) || 0,
+                        },
+                    })
+                }
+                className="px-4 py-2 border rounded-lg"
+            />
+
+            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
+                <input
+                    id="barmer"
+                    type="checkbox"
+                    checked={formData.extraAttributes.barmerAccepted}
+                    onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            extraAttributes: { ...formData.extraAttributes, barmerAccepted: e.target.checked },
+                        })
+                    }
+                    className="w-4 h-4"
+                />
+                <label htmlFor="barmer" className="text-sm">Barmer Accepted</label>
+            </div>
+
+            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
+                <input
+                    id="tk"
+                    type="checkbox"
+                    checked={formData.extraAttributes.technikerKrankenkasseAccepted}
+                    onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            extraAttributes: { ...formData.extraAttributes, technikerKrankenkasseAccepted: e.target.checked },
+                        })
+                    }
+                    className="w-4 h-4"
+                />
+                <label htmlFor="tk" className="text-sm">Techniker Krankenkasse Accepted</label>
+            </div>
+
+            <div className="md:col-span-2 flex gap-4">
+                <button
+                    type="submit"
+                    className="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700"
+                >
+                    Create Doctor
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="bg-gray-300 px-6 py-3 rounded-lg hover:bg-gray-400"
+                >
+                    Cancel
+                </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <Card>
         <div className="overflow-x-auto">
