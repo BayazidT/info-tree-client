@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
-  baseURL: 'https://infotree-api.trbtree.com/api/', 
+  baseURL: 'https://infotree-api.trbtree.com/info-tree-service/api/', 
   headers: { 'Content-Type': 'application/json' },
 });
 
