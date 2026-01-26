@@ -1,7 +1,7 @@
 import React, { JSX, useEffect, useMemo, useState } from "react";
 import { Plus, ExternalLink, MapPin } from "lucide-react";
 import Card from "@/components/ui/Card";
-import { getDoctors } from "@/api/doctorApi";
+import { createDoctor, getDoctors } from "@/api/doctorApi";
 import type { Doctor, PaginatedResponse } from "@/types/doctor.types";
 
 export default function DoctorPage(): JSX.Element {
@@ -21,30 +21,34 @@ const [formData, setFormData] = useState<CreateDoctor>({
     gender: "",
     idNumber: "",
     address: "",
-    cityId: 0,
-    categoryId: 0,
+    cityId: 1,
+    categoryId: 5,
     privatePatientsOnly: false,
     acceptsNewPatients: false,
     telemedicineAvailable: false,
     appointmentUrl: "",
     emergencyAppointments: false,
     consultationHours: {
-        Mo: "",
-        Di: "",
-        Mi: "",
-        Do: "",
-        Fr: "",
-        Sa: "",
-        emergency: "",
+        Sat: "",
+        Sun: ""
     },
     extraAttributes: {
         focusAreas: [],
-        barmerAccepted: false,
-        technikerKrankenkasseAccepted: false,
-        patientReviewsAvg: 0,
-        yearsOfExperience: 0,
+        patientReviewsAvg: 4.5,
+        hospitals:[{
+            hospitalName: "",
+            availability: "",
+            contactDetails: "",
+        }],
     },
 });
+
+const [focusAreasText, setFocusAreasText] = useState<string>((formData.extraAttributes?.focusAreas || []).join(", "));
+
+useEffect(() => {
+    // keep the raw text synced when the form is opened or the focusAreas array changes
+    setFocusAreasText((formData.extraAttributes?.focusAreas || []).join(", "));
+}, [showForm, JSON.stringify(formData.extraAttributes?.focusAreas)]);
 
   useEffect(() => {
     fetchDoctors();
@@ -70,7 +74,14 @@ const [formData, setFormData] = useState<CreateDoctor>({
   const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       try {
-        
+        await createDoctor(formData);
+        setShowForm(false);
+        setFormData({
+            title: "",
+            firstName: "",
+            lastName: "",});
+        setFocusAreasText("");
+        // console.log('Creating doctor with data:', formData);
         fetchDoctors(); // Refresh list
       } catch (err) {
         alert('Failed to create doctor');
@@ -113,8 +124,15 @@ const [formData, setFormData] = useState<CreateDoctor>({
 
       {showForm && (
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Create New Doctor</h2>
+          <h2 className="text-xl font-semibold mb-4">Entry of a New Doctor</h2>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+                type="text"
+                placeholder="Title (e.g. Dr. / Prof.)"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="px-4 py-2 border rounded-lg"
+            />
             <input
                 type="text"
                 required
@@ -132,13 +150,7 @@ const [formData, setFormData] = useState<CreateDoctor>({
                 className="px-4 py-2 border rounded-lg"
             />
 
-            <input
-                type="text"
-                placeholder="Title (e.g. Dr. / Prof.)"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="px-4 py-2 border rounded-lg"
-            />
+            
 
             <select
                 value={formData.gender ?? ""}
@@ -158,7 +170,6 @@ const [formData, setFormData] = useState<CreateDoctor>({
                 onChange={(e) => setFormData({ ...formData, idNumber: e.target.value })}
                 className="px-4 py-2 border rounded-lg"
             />
-
             <input
                 type="text"
                 placeholder="Address"
@@ -167,245 +178,107 @@ const [formData, setFormData] = useState<CreateDoctor>({
                 className="px-4 py-2 border rounded-lg"
             />
 
-            <input
-                type="number"
-                placeholder="City ID"
-                value={String(formData.cityId ?? "")}
-                onChange={(e) => setFormData({ ...formData, cityId: Number(e.target.value) || 0 })}
-                className="px-4 py-2 border rounded-lg"
-            />
-
-            <input
-                type="number"
-                placeholder="Category ID"
-                value={String(formData.categoryId ?? "")}
-                onChange={(e) => setFormData({ ...formData, categoryId: Number(e.target.value) || 0 })}
-                className="px-4 py-2 border rounded-lg"
-            />
-
-            <input
-                type="url"
-                placeholder="Appointment URL (optional)"
-                value={formData.appointmentUrl}
-                onChange={(e) => setFormData({ ...formData, appointmentUrl: e.target.value })}
-                className="px-4 py-2 border rounded-lg"
-            />
-
-            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
-                <input
-                    id="telemed"
-                    type="checkbox"
-                    checked={formData.telemedicineAvailable}
-                    onChange={(e) => setFormData({ ...formData, telemedicineAvailable: e.target.checked })}
-                    className="w-4 h-4"
-                />
-                <label htmlFor="telemed" className="text-sm">Telemedicine Available</label>
-            </div>
-
-            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
-                <input
-                    id="privateOnly"
-                    type="checkbox"
-                    checked={formData.privatePatientsOnly}
-                    onChange={(e) => setFormData({ ...formData, privatePatientsOnly: e.target.checked })}
-                    className="w-4 h-4"
-                />
-                <label htmlFor="privateOnly" className="text-sm">Private Patients Only</label>
-            </div>
-
-            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
-                <input
-                    id="acceptsNew"
-                    type="checkbox"
-                    checked={formData.acceptsNewPatients}
-                    onChange={(e) => setFormData({ ...formData, acceptsNewPatients: e.target.checked })}
-                    className="w-4 h-4"
-                />
-                <label htmlFor="acceptsNew" className="text-sm">Accepts New Patients</label>
-            </div>
-
-            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
-                <input
-                    id="emergencyAppointments"
-                    type="checkbox"
-                    checked={formData.emergencyAppointments}
-                    onChange={(e) => setFormData({ ...formData, emergencyAppointments: e.target.checked })}
-                    className="w-4 h-4"
-                />
-                <label htmlFor="emergencyAppointments" className="text-sm">Emergency Appointments</label>
-            </div>
-
-            {/* Consultation hours */}
-            <div className="md:col-span-2 grid grid-cols-2 gap-2">
-                <input
-                    type="text"
-                    placeholder="Mo"
-                    value={formData.consultationHours?.Mo ?? ""}
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            consultationHours: { ...(formData.consultationHours || {}), Mo: e.target.value },
-                        })
-                    }
-                    className="px-4 py-2 border rounded-lg"
-                />
-                <input
-                    type="text"
-                    placeholder="Di"
-                    value={formData.consultationHours?.Di ?? ""}
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            consultationHours: { ...(formData.consultationHours || {}), Di: e.target.value },
-                        })
-                    }
-                    className="px-4 py-2 border rounded-lg"
-                />
-                <input
-                    type="text"
-                    placeholder="Mi"
-                    value={formData.consultationHours?.Mi ?? ""}
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            consultationHours: { ...(formData.consultationHours || {}), Mi: e.target.value },
-                        })
-                    }
-                    className="px-4 py-2 border rounded-lg"
-                />
-                <input
-                    type="text"
-                    placeholder="Do"
-                    value={formData.consultationHours?.Do ?? ""}
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            consultationHours: { ...(formData.consultationHours || {}), Do: e.target.value },
-                        })
-                    }
-                    className="px-4 py-2 border rounded-lg"
-                />
-                <input
-                    type="text"
-                    placeholder="Fr"
-                    value={formData.consultationHours?.Fr ?? ""}
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            consultationHours: { ...(formData.consultationHours || {}), Fr: e.target.value },
-                        })
-                    }
-                    className="px-4 py-2 border rounded-lg"
-                />
-                <input
-                    type="text"
-                    placeholder="Sa"
-                    value={formData.consultationHours?.Sa ?? ""}
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            consultationHours: { ...(formData.consultationHours || {}), Sa: e.target.value },
-                        })
-                    }
-                    className="px-4 py-2 border rounded-lg"
-                />
-                <input
-                    type="text"
-                    placeholder="Emergency Hours"
-                    value={formData.consultationHours?.emergency ?? ""}
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            consultationHours: { ...(formData.consultationHours || {}), emergency: e.target.value },
-                        })
-                    }
-                    className="px-4 py-2 border rounded-lg"
-                />
-            </div>
-
             {/* Extra attributes */}
             <input
                 type="text"
                 placeholder="Focus Areas (comma separated)"
-                value={(formData.extraAttributes.focusAreas || []).join(", ")}
-                onChange={(e) =>
-                    setFormData({
-                        ...formData,
+                value={focusAreasText}
+                onChange={(e) => setFocusAreasText(e.target.value)}
+                onBlur={() =>
+                    setFormData((prev) => ({
+                        ...prev,
                         extraAttributes: {
-                            ...formData.extraAttributes,
-                            focusAreas: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                            ...prev.extraAttributes,
+                            focusAreas: focusAreasText.split(",").map((s) => s.trim()).filter(Boolean),
                         },
-                    })
+                    }))
                 }
                 className="md:col-span-2 px-4 py-2 border rounded-lg"
             />
 
-            <input
-                type="number"
-                min={0}
-                placeholder="Years of Experience"
-                value={String(formData.extraAttributes.yearsOfExperience ?? "")}
-                onChange={(e) =>
-                    setFormData({
-                        ...formData,
-                        extraAttributes: {
-                            ...formData.extraAttributes,
-                            yearsOfExperience: Number(e.target.value) || 0,
-                        },
-                    })
-                }
-                className="px-4 py-2 border rounded-lg"
-            />
-
-            <input
-                type="number"
-                step="0.1"
-                min={0}
-                max={5}
-                placeholder="Patient Reviews Avg (0-5)"
-                value={String(formData.extraAttributes.patientReviewsAvg ?? "")}
-                onChange={(e) =>
-                    setFormData({
-                        ...formData,
-                        extraAttributes: {
-                            ...formData.extraAttributes,
-                            patientReviewsAvg: Number(e.target.value) || 0,
-                        },
-                    })
-                }
-                className="px-4 py-2 border rounded-lg"
-            />
-
-            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
-                <input
-                    id="barmer"
-                    type="checkbox"
-                    checked={formData.extraAttributes.barmerAccepted}
+            {/* Hospitals: multiple entries with add/remove */}
+            <div className="md:col-span-2 space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Hospitals</label>
+              {((formData.extraAttributes?.hospitals ?? []) as { hospitalName?: string; availability?: string; contactDetails?: string }[]).map((h, idx) => (
+                <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                  <input
+                    type="text"
+                    placeholder="Hospital Name"
+                    value={h.hospitalName || ""}
                     onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            extraAttributes: { ...formData.extraAttributes, barmerAccepted: e.target.checked },
-                        })
+                      setFormData((prev) => {
+                        const extra = prev.extraAttributes || {};
+                        const hospitals = [...(extra.hospitals || [])];
+                        hospitals[idx] = { ...(hospitals[idx] || {}), hospitalName: e.target.value };
+                        return { ...prev, extraAttributes: { ...extra, hospitals } };
+                      })
                     }
-                    className="w-4 h-4"
-                />
-                <label htmlFor="barmer" className="text-sm">Barmer Accepted</label>
-            </div>
-
-            <div className="flex items-center gap-2 px-4 py-2 border rounded-lg">
-                <input
-                    id="tk"
-                    type="checkbox"
-                    checked={formData.extraAttributes.technikerKrankenkasseAccepted}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Availability (e.g. Mon-Fri 9am-5pm)"
+                    value={h.availability || ""}
                     onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            extraAttributes: { ...formData.extraAttributes, technikerKrankenkasseAccepted: e.target.checked },
-                        })
+                      setFormData((prev) => {
+                        const extra = prev.extraAttributes || {};
+                        const hospitals = [...(extra.hospitals || [])];
+                        hospitals[idx] = { ...(hospitals[idx] || {}), availability: e.target.value };
+                        return { ...prev, extraAttributes: { ...extra, hospitals } };
+                      })
                     }
-                    className="w-4 h-4"
-                />
-                <label htmlFor="tk" className="text-sm">Techniker Krankenkasse Accepted</label>
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Contact Details"
+                      value={h.contactDetails || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => {
+                          const extra = prev.extraAttributes || {};
+                          const hospitals = [...(extra.hospitals || [])];
+                          hospitals[idx] = { ...(hospitals[idx] || {}), contactDetails: e.target.value };
+                          return { ...prev, extraAttributes: { ...extra, hospitals } };
+                        })
+                      }
+                      className="flex-1 px-4 py-2 border rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => {
+                          const extra = prev.extraAttributes || {};
+                          const hospitals = [...(extra.hospitals || [])];
+                          hospitals.splice(idx, 1);
+                          return { ...prev, extraAttributes: { ...extra, hospitals } };
+                        })
+                      }
+                      className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => {
+                      const extra = prev.extraAttributes || {};
+                      const hospitals = [...(extra.hospitals || [])];
+                      hospitals.push({ hospitalName: "", availability: "", contactDetails: "" });
+                      return { ...prev, extraAttributes: { ...extra, hospitals } };
+                    })
+                  }
+                  className="inline-flex items-center gap-2 bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Hospital
+                </button>
+              </div>
             </div>
 
             <div className="md:col-span-2 flex gap-4">
