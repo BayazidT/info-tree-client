@@ -1,11 +1,11 @@
 version: "3.9"
 
 services:
-  frontend:
+  infotree-client:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: frontend
+    container_name: infotree-client
     ports:
-      - "3000:80"  # Map container port 80 to host 3000
+      - "3001:80"  # Map container port 80 to host 3001
     restart: unless-stopped
