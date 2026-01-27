@@ -11,6 +11,7 @@ import DoctorPage from './app/routes/doctors/DoctorsPage';
 import CivicPage from './app/routes/civic/CivicPage';
 import UsersPage from './app/routes/users/UsersPage';
 import UserDetailsPage from './app/routes/users/UserDetailsPage';
+import DoctorDetailsPage from './app/routes/doctors/DoctorDetailsPage';
 
 function AuthLoader() {
   const { tokens, user, login } = useAuthStore();
@@ -97,6 +98,14 @@ export default function App() {
             element={
               <Suspense fallback={<PageLoading />}>
                 <DoctorPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="doctor/:id"
+            element={
+              <Suspense fallback={<PageLoading />}>
+                <DoctorDetailsPage />
               </Suspense>
             }
           />
