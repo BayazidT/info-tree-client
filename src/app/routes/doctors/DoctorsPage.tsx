@@ -1,10 +1,11 @@
 import React, { JSX, useEffect, useMemo, useState } from "react";
-import { Plus, ExternalLink, MapPin } from "lucide-react";
+import { Plus, ExternalLink, MapPin, Eye, Trash2 } from "lucide-react";
 import Card from "@/components/ui/Card";
 import { createDoctor, getDoctors } from "@/api/doctorApi";
 import type { Doctor, PaginatedResponse } from "@/types/doctor.types";
-
+import { useNavigate } from "react-router-dom";
 export default function DoctorPage(): JSX.Element {
+  const navigate = useNavigate();
   const [pageData, setPageData] = useState<PaginatedResponse<Doctor> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,13 +47,11 @@ const [formData, setFormData] = useState<CreateDoctor>({
 const [focusAreasText, setFocusAreasText] = useState<string>((formData.extraAttributes?.focusAreas || []).join(", "));
 
 useEffect(() => {
-    // keep the raw text synced when the form is opened or the focusAreas array changes
     setFocusAreasText((formData.extraAttributes?.focusAreas || []).join(", "));
 }, [showForm, JSON.stringify(formData.extraAttributes?.focusAreas)]);
 
   useEffect(() => {
     fetchDoctors();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   const fetchDoctors = async () => {
@@ -81,7 +80,6 @@ useEffect(() => {
             firstName: "",
             lastName: "",});
         setFocusAreasText("");
-        // console.log('Creating doctor with data:', formData);
         fetchDoctors(); // Refresh list
       } catch (err) {
         alert('Failed to create doctor');
@@ -106,6 +104,44 @@ useEffect(() => {
   const totalPages = pageData?.totalPages ?? 1;
   const totalElements = pageData?.totalElements ?? doctors.length;
 
+    function handleDelete(id: string | number | undefined): void {
+        if (id === undefined || id === null) return;
+        if (!confirm("Are you sure you want to delete this doctor?")) return;
+
+        (async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                // Attempt delete via backend endpoint. Adjust URL if your API differs
+                const res = await fetch(`/api/doctors/${id}`, { method: "DELETE" });
+                if (!res.ok) {
+                    const text = await res.text().catch(() => res.statusText);
+                    throw new Error(text || `Delete failed with status ${res.status}`);
+                }
+
+                // Optimistically remove the deleted doctor from state
+                setPageData((prev) => {
+                    if (!prev) return prev;
+                    const newContent = prev.content.filter((d) => String(d.id) !== String(id));
+                    return {
+                        ...prev,
+                        content: newContent,
+                        totalElements: Math.max(0, (prev.totalElements ?? prev.content.length) - 1),
+                    };
+                });
+
+                // Refresh list to ensure server/state stay in sync
+                fetchDoctors();
+            } catch (err: any) {
+                console.error(err);
+                setError(err?.message ?? "Failed to delete doctor");
+                alert("Failed to delete doctor");
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -313,7 +349,7 @@ useEffect(() => {
                 <th className="text-left px-4 py-3">Rating</th>
                 <th className="text-left px-4 py-3">Focus Areas</th>
                 <th className="text-left px-4 py-3">Telemed</th>
-                <th className="text-left px-4 py-3">Appointment</th>
+                <th className="text-left px-4 py-3">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -328,15 +364,23 @@ useEffect(() => {
                   <td className="px-4 py-3">{d.extraAttributes?.patientReviewsAvg ?? "-"}</td>
                   <td className="px-4 py-3">{d.extraAttributes?.focusAreas?.join(", ") ?? "-"}</td>
                   <td className="px-4 py-3">{d.telemedicineAvailable ? "Yes" : "No"}</td>
-                  <td className="px-4 py-3">
-                    {d.appointmentUrl ? (
-                      <a href={d.appointmentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sky-600">
-                        <ExternalLink className="w-4 h-4" /> Book
-                      </a>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
+                  <td className="px-6 py-5 text-right flex justify-end gap-2">
+                            <button
+                                onClick={() => navigate(`/doctor/${d.id}`)}
+                              className="text-sky-600 hover:bg-sky-50 p-3 rounded-lg transition"
+                              title="View details"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+
+                            <button
+                              onClick={() => handleDelete(d.id)}
+                              className="text-red-600 hover:bg-red-50 p-3 rounded-lg transition"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          </td>
                 </tr>
               ))}
             </tbody>
