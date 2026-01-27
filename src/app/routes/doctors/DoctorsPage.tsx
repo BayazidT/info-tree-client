@@ -102,7 +102,6 @@ useEffect(() => {
 
   if (loading) return <div className="p-8 text-center text-gray-600">Loading doctors…</div>;
   if (error) return <div className="p-8 text-center text-red-600">Error: {error}</div>;
-  if (doctors.length === 0) return <div className="p-8 text-center text-gray-600">No doctors found.</div>;
 
   const totalPages = pageData?.totalPages ?? 1;
   const totalElements = pageData?.totalElements ?? doctors.length;
@@ -299,7 +298,7 @@ useEffect(() => {
           </form>
         </div>
       )}
-
+{doctors.length > 0 && (
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -356,6 +355,10 @@ useEffect(() => {
           </div>
         )}
       </Card>
+    )}
+    {doctors.length === 0 && (
+        <div className="p-8 text-center text-gray-600">No doctors found.</div>
+    )}
     </div>
   );
 }
