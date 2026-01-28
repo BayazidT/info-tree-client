@@ -29,7 +29,7 @@ export const updateDoctor = async (id: string | number, doctor: Partial<Doctor>)
 export const deleteDoctor = async (id: string | number): Promise<void> => {
   await api.delete(`/v1/private/doctor/${id}`);
 };
-export const getDoctor = async (id: string | number): Promise<Doctor> => {
+export const findDoctorById = async (id: string | number): Promise<Doctor> => {
   const res = await api.get<Doctor>(`/v1/private/doctor/${id}`);
   return res.data;
 };
