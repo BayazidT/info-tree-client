@@ -2,14 +2,32 @@ import React, {JSX, useEffect, useMemo, useState } from "react";
 import { Search, MapPin, Phone, Mail } from "lucide-react";
 import Card from "@/components/ui/Card";
 import { format } from "date-fns";
-import { getCivics } from "@/api/civicApi";
-import type { Civic, PaginatedResponse } from "@/types/civic.types";
+import { createCivic, getCivics } from "@/api/civicApi";
+import type { Civic, CivicCreate, PaginatedResponse } from "@/types/civic.types";
 
 export default function CivicPage(): JSX.Element {
   const [pageData, setPageData] = useState<PaginatedResponse<Civic> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [formData, setFormData] = useState<CivicCreate>({
+  title: "",
+  description: "",
+  address: "",
+  cityId: 1,
+  categoryId: 5,
+  contactPhone: "",
+  contactEmail: "",
+  is24h7: false,
+  lastVerified: "2026-01-29T01:30:00Z",
+  isActive: true,
+  extraAttributes: {
+    nonEmergencyPhone: "",
+    services: [],
+  },
+});
+
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 10;
 
@@ -51,29 +69,189 @@ export default function CivicPage(): JSX.Element {
     );
   }, [civics, searchTerm]);
 
-  if (loading) return <div className="p-8 text-center text-gray-600">Loading civic services…</div>;
-  if (error) return <div className="p-8 text-center text-red-600">Error: {error}</div>;
-  if (civics.length === 0) return <div className="p-8 text-center text-gray-600">No civic entries found.</div>;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Implement form submission logic here
+    const res = await createCivic(formData);
+    console.log("Created civic:", res);
+    fetchCivics();
+    throw new Error("Function not implemented.");
+  }
 
+  if (loading) return <div className="p-8 text-center text-gray-600">Loading emergency services…</div>;
+  if (error) return <div className="p-8 text-center text-red-600">Error: {error}</div>;
   const totalPages = pageData?.totalPages ?? 1;
   const totalElements = pageData?.totalElements ?? civics.length;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Civic Services</h1>
-        <div className="w-80 relative">
-          <Search className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-          <input
-            className="w-full pl-10 pr-3 py-2 border rounded-lg"
-            placeholder="Search title, city or service..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") { setCurrentPage(0); fetchCivics(); } }}
-          />
+        <h1 className="text-2xl font-semibold">Emergency Services</h1>
+        <div className="flex items-center gap-4">
+          <div className="w-80 relative">
+            <Search className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+            <input
+              className="w-full pl-10 pr-3 py-2 border rounded-lg"
+              placeholder="Search title, city or service..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { setCurrentPage(0); fetchCivics(); } }}
+            />
+          </div>
+
+          {/* Modal toggle using hidden checkbox to avoid adding new hooks */}
+          <div className="relative">
+            <input id="add-civic-modal" type="checkbox" className="hidden peer" />
+
+            <label
+              htmlFor="add-civic-modal"
+              className="inline-flex items-center gap-2 px-3 py-2 bg-sky-600 text-white rounded cursor-pointer"
+            >
+              Add Service
+            </label>
+
+            {/* Modal overlay — becomes visible when checkbox (peer) is checked */}
+            <div className="peer-checked:flex hidden fixed inset-0 z-50 items-center justify-center bg-black/40 p-4">
+              <div className="bg-white p-6 rounded shadow max-w-lg w-full">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-medium">New Emergency Service</h2>
+            <label htmlFor="add-civic-modal" className="cursor-pointer text-gray-600">Close</label>
+          </div>
+
+          {/* Basic form markup — replace with actual submit handler as needed */}
+         <form
+            className="space-y-3"
+            onSubmit={handleSubmit}
+          >
+            {/* Title */}
+            <input
+              value={formData.title}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
+              placeholder="Service title"
+              className="w-full border px-3 py-2 rounded"
+              required
+            />
+
+            {/* Description */}
+            <textarea
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              placeholder="Description"
+              className="w-full border px-3 py-2 rounded"
+              rows={3}
+            />
+
+            <input
+                value={formData.address}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
+                placeholder="Address"
+                className="w-full border px-3 py-2 rounded"
+              />
+
+            {/* Contact */}
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                value={formData.contactPhone}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactPhone: e.target.value })
+                }
+                placeholder="Emergency phone"
+                className="w-full border px-3 py-2 rounded"
+              />
+
+              <input
+                type="email"
+                value={formData.contactEmail}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactEmail: e.target.value })
+                }
+                placeholder="Contact email"
+                className="w-full border px-3 py-2 rounded"
+              />
+            </div>
+
+            {/* Extra attributes */}
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                value={formData.extraAttributes?.nonEmergencyPhone ?? ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    extraAttributes: {
+                      ...formData.extraAttributes,
+                      nonEmergencyPhone: e.target.value,
+                    },
+                  })
+                }
+                placeholder="Non-emergency phone"
+                className="w-full border px-3 py-2 rounded"
+              />
+
+              <input
+value={formData.extraAttributes?.services?.join(", ") ?? ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    extraAttributes: {
+                      ...formData.extraAttributes,
+                      services: e.target.value
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    },
+                  })
+                }
+                placeholder="Services (comma separated)"
+                className="w-full border px-3 py-2 rounded"
+              />
+            </div>
+
+            {/* Flags */}
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={formData.is24h7}
+                  onChange={(e) =>
+                    setFormData({ ...formData, is24h7: e.target.checked })
+                  }
+                  className="h-4 w-4"
+                />
+                Open 24/7
+              </label>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-2">
+              <label
+                htmlFor="add-civic-modal"
+                className="px-3 py-2 rounded border cursor-pointer"
+              >
+                Cancel
+              </label>
+
+              <button
+                type="submit"
+                className="px-3 py-2 rounded bg-sky-600 text-white"
+              >
+                Save
+              </button>
+            </div>
+          </form>
+
+
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
+{ filtered.length > 0 ? (
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -127,6 +305,10 @@ export default function CivicPage(): JSX.Element {
           </div>
         )}
       </Card>
+  ) : (
+    <div className="text-center py-10">
+      <p className="text-gray-600">No civic services found..</p>
     </div>
-  );
+  )}
+  </div>)
 }
