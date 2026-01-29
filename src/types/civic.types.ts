@@ -27,7 +27,20 @@ export type Civic = {
   extraAttributes?: CivicExtraAttributes;
   [key: string]: any;
 };
-
+export type CivicCreate ={
+  title?: string;
+  description?: string;
+  address?: string;
+  cityId?: number;
+  categoryId?: number;
+  contactPhone?: string;
+  contactEmail?: string;
+  is24h7?: boolean;
+  lastVerified?: string;
+  isActive?: boolean;
+  extraAttributes?: CivicExtraAttributes;
+  [key: string]: any;
+}
 export type PaginatedResponse<T> = {
   totalElements: number;
   totalPages: number;
