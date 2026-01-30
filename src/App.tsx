@@ -12,6 +12,7 @@ import CivicPage from './app/routes/civic/CivicPage';
 import UsersPage from './app/routes/users/UsersPage';
 import UserDetailsPage from './app/routes/users/UserDetailsPage';
 import DoctorDetailsPage from './app/routes/doctors/DoctorDetailsPage';
+import CreatePage from './app/routes/create/CreatePage';
 
 function AuthLoader() {
   const { tokens, user, login } = useAuthStore();
@@ -114,6 +115,14 @@ export default function App() {
             element={
               <Suspense fallback={<PageLoading />}>
                 <CivicPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="create"
+            element={
+              <Suspense fallback={<PageLoading />}>
+                <CreatePage />
               </Suspense>
             }
           />
