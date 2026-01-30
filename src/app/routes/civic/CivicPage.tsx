@@ -16,7 +16,7 @@ export default function CivicPage(): JSX.Element {
   description: "",
   address: "",
   cityId: 1,
-  categoryId: 5,
+  categoryId: 2,
   contactPhone: "",
   contactEmail: "",
   is24h7: false,

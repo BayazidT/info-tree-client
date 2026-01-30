@@ -6,6 +6,8 @@ const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: Home },
   { to: '/doctors', label: 'Doctors', icon: DockIcon },
   { to: '/emergency', label: 'Emergency', icon: InfoIcon },
+    { to: '/create', label: 'Create Emergency', icon: InfoIcon },
+
   { to: '/users', label: 'User', icon: UserCog }
 ];
 
