@@ -1,12 +1,22 @@
 // src/app/App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, useEffect } from 'react';
-import { useAuthStore } from '@/store/authStore'
+
+import { useAuthStore } from '@/store/authStore';
 import { getProfile } from '@/api/authApi';
+
 import ProtectedRoute from '@/components/common/protectedRoute';
+import PublicLayout from '@/components/layout/PublicLayout';     // ← new
 import DashboardLayout from '@/app/routes/dashboard.layout';
+
+import LandingPage from '@/app/pages/public/LandingPage';   // ← your new public home
+// other public pages
+// import EmergencyPublicPage from '@/pages/public/EmergencyPage';
+// import DoctorsPublicPage from '@/pages/public/DoctorsPage';
+// import ContactPage from '@/pages/public/ContactPage';
+
+// admin pages (keep as-is)
 import Dashboard from './app/routes/DashboardPage';
-import LoginPage from '@/app/routes/auth/LoginPage';
 import DoctorPage from './app/routes/doctors/DoctorsPage';
 import CivicPage from './app/routes/civic/CivicPage';
 import UsersPage from './app/routes/users/UsersPage';
@@ -14,82 +24,72 @@ import UserDetailsPage from './app/routes/users/UserDetailsPage';
 import DoctorDetailsPage from './app/routes/doctors/DoctorDetailsPage';
 import CreatePage from './app/routes/create/CreatePage';
 
+import LoginPage from '@/app/routes/auth/LoginPage';
+// import NotFound from '@/pages/NotFound';
+// ────────────────────────────────────────────────
+//  Auth loader (unchanged)
 function AuthLoader() {
   const { tokens, user, login } = useAuthStore();
 
   useEffect(() => {
-    if (tokens && !user) {
+    if (tokens?.accessToken && !user) {
       getProfile(tokens.accessToken)
-        .then(() => {
-          // Re-use login action to set user (tokens already stored)
-          login(tokens);
-        })
-        .catch(() => {
-          useAuthStore.getState().logout();
-        });
+        .then(() => login(tokens))
+        .catch(() => useAuthStore.getState().logout());
     }
   }, [tokens, user, login]);
 
   return null;
 }
 
-// Redirect logic for root path
+// ────────────────────────────────────────────────
+//  Redirect root "/" intelligently
 function RootRedirect() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
-}
-
-// Loading fallback component
-function PageLoading() {
-  return (
-    <div className="flex items-center justify-center h-64">
-      <div className="text-lg text-gray-600 animate-pulse">Loading page...</div>
-    </div>
+  return isAuthenticated ? (
+    <Navigate to="/admin/dashboard" replace />
+  ) : (
+    <Navigate to="/admin/login" replace />
   );
 }
 
-// 404 page
-function NotFound() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <h1 className="text-6xl font-bold text-gray-800 mb-4">404</h1>
-      <p className="text-xl text-gray-600">Page not found</p>
-      <button
-        onClick={() => window.history.back()}
-        className="mt-6 px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
-      >
-        Go Back
-      </button>
-    </div>
-  );
-}
-
+// ────────────────────────────────────────────────
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthLoader /> {/* Loads profile if tokens exist but user missing */}
+      <AuthLoader />
 
       <Routes>
-        {/* Public Login Route */}
-        <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected Dashboard Routes */}
+        {/* ─── Public section ──────────────────────────────────────── */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          {/* <Route path="/emergency" element={<EmergencyPublicPage />} />
+          <Route path="/doctors" element={<DoctorsPublicPage />} />
+          <Route path="/contact" element={<ContactPage />} /> */}
+
+          {/* Login is usually separate or in public layout */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Optional: public doctor detail, emergency detail, etc. */}
+          {/* <Route path="/doctors/:id" element={<PublicDoctorDetail />} /> */}
+        </Route>
+
+        {/* ─── Admin / Protected section ───────────────────────────── */}
         <Route
-          path="/*"
+          path="/admin"
           element={
             <ProtectedRoute>
               <DashboardLayout />
             </ProtectedRoute>
           }
         >
-          {/* Default redirect based on auth state */}
-          <Route index element={<RootRedirect />} />
+          <Route index element={<Navigate to="dashboard" replace />} />
 
-          {/* Dashboard Pages */}
           <Route
             path="dashboard"
             element={
-              <Suspense fallback={<PageLoading />}>
+              <Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
                 <Dashboard />
               </Suspense>
             }
@@ -97,15 +97,15 @@ export default function App() {
           <Route
             path="doctors"
             element={
-              <Suspense fallback={<PageLoading />}>
+              <Suspense fallback={<div>Loading...</div>}>
                 <DoctorPage />
               </Suspense>
             }
           />
           <Route
-            path="doctor/:id"
+            path="doctors/:id"
             element={
-              <Suspense fallback={<PageLoading />}>
+              <Suspense fallback={<div>Loading...</div>}>
                 <DoctorDetailsPage />
               </Suspense>
             }
@@ -113,7 +113,7 @@ export default function App() {
           <Route
             path="emergency"
             element={
-              <Suspense fallback={<PageLoading />}>
+              <Suspense fallback={<div>Loading...</div>}>
                 <CivicPage />
               </Suspense>
             }
@@ -121,7 +121,7 @@ export default function App() {
           <Route
             path="create"
             element={
-              <Suspense fallback={<PageLoading />}>
+              <Suspense fallback={<div>Loading...</div>}>
                 <CreatePage />
               </Suspense>
             }
@@ -129,7 +129,7 @@ export default function App() {
           <Route
             path="users"
             element={
-              <Suspense fallback={<PageLoading />}>
+              <Suspense fallback={<div>Loading...</div>}>
                 <UsersPage />
               </Suspense>
             }
@@ -137,15 +137,15 @@ export default function App() {
           <Route
             path="users/:id"
             element={
-              <Suspense fallback={<PageLoading />}>
+              <Suspense fallback={<div>Loading...</div>}>
                 <UserDetailsPage />
               </Suspense>
             }
           />
         </Route>
 
-        {/* Catch-all 404 */}
-        <Route path="*" element={<NotFound />} />
+        {/* ─── Fallbacks ───────────────────────────────────────────── */}
+        {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
     </BrowserRouter>
   );

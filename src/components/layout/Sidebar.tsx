@@ -3,12 +3,11 @@ import { InfoIcon, Utensils, UserCog, Home, LogOut, DockIcon } from 'lucide-reac
 import { useAuthStore } from '@/store/authStore';
 
 const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: Home },
-  { to: '/doctors', label: 'Doctors', icon: DockIcon },
-  { to: '/emergency', label: 'Emergency', icon: InfoIcon },
-    { to: '/create', label: 'Create Emergency', icon: InfoIcon },
-
-  { to: '/users', label: 'User', icon: UserCog }
+  { to: '/admin/dashboard', label: 'Dashboard', icon: Home },
+  { to: '/admin/doctors', label: 'Doctors', icon: DockIcon },
+  { to: '/admin/emergency', label: 'Emergency', icon: InfoIcon },
+  { to: '/admin/create', label: 'Create Emergency', icon: InfoIcon },
+  { to: '/admin/users', label: 'User', icon: UserCog }
 ];
 
 export default function Sidebar() {
