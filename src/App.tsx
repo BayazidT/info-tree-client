@@ -8,23 +8,26 @@ import { getProfile } from '@/api/authApi';
 import ProtectedRoute from '@/components/common/protectedRoute';
 import PublicLayout from '@/components/layout/PublicLayout';     // ← new
 import DashboardLayout from '@/app/routes/dashboard.layout';
-
+import { LanguageProvider } from '@/context/LanguageContext';
 import LandingPage from '@/app/pages/public/LandingPage';   // ← your new public home
 // other public pages
 // import EmergencyPublicPage from '@/pages/public/EmergencyPage';
-// import DoctorsPublicPage from '@/pages/public/DoctorsPage';
+import DoctorsPage from '@/app/pages/public/DoctorsPage';
 // import ContactPage from '@/pages/public/ContactPage';
 
 // admin pages (keep as-is)
 import Dashboard from './app/routes/DashboardPage';
-import DoctorPage from './app/routes/doctors/DoctorsPage';
 import CivicPage from './app/routes/civic/CivicPage';
+import DoctorPage from './app/routes/doctors/DoctorsPage';
 import UsersPage from './app/routes/users/UsersPage';
 import UserDetailsPage from './app/routes/users/UserDetailsPage';
 import DoctorDetailsPage from './app/routes/doctors/DoctorDetailsPage';
 import CreatePage from './app/routes/create/CreatePage';
 
 import LoginPage from '@/app/routes/auth/LoginPage';
+import DoctorDetailsPublicPage from './app/pages/public/DoctorDetailsPublicPage';
+import EmergencyPublicPage from './app/pages/public/EmergencyPublicPage';
+import NotFoundPage from './app/pages/public/NotFoundPage';
 // import NotFound from '@/pages/NotFound';
 // ────────────────────────────────────────────────
 //  Auth loader (unchanged)
@@ -64,15 +67,15 @@ export default function App() {
         {/* ─── Public section ──────────────────────────────────────── */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
-          {/* <Route path="/emergency" element={<EmergencyPublicPage />} />
-          <Route path="/doctors" element={<DoctorsPublicPage />} />
-          <Route path="/contact" element={<ContactPage />} /> */}
+          <Route path="/emergency" element={<EmergencyPublicPage />} />
+          <Route path="/doctors" element={<DoctorsPage />} />
+          {/* <Route path="/contact" element={<ContactPage />} /> */}
 
           {/* Login is usually separate or in public layout */}
           <Route path="/login" element={<LoginPage />} />
 
           {/* Optional: public doctor detail, emergency detail, etc. */}
-          {/* <Route path="/doctors/:id" element={<PublicDoctorDetail />} /> */}
+          <Route path="/doctors/:id" element={<DoctorDetailsPublicPage />} />
         </Route>
 
         {/* ─── Admin / Protected section ───────────────────────────── */}
@@ -145,7 +148,7 @@ export default function App() {
         </Route>
 
         {/* ─── Fallbacks ───────────────────────────────────────────── */}
-        {/* <Route path="*" element={<NotFound />} /> */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
