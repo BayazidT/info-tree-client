@@ -1,12 +1,17 @@
 export type ConsultationHours = Record<string, string>; // e.g. { Mo: "08:00-12:00", Sa: "nach Vereinbarung" }
 
+export type HospitalAffiliation = {
+  hospitalName: string;
+  availability: string;
+  contactDetails?: string;
+};
+
 export type DoctorExtraAttributes = {
-  yearsOfExperience?: number;
   patientReviewsAvg?: number;
+  hospitals?: HospitalAffiliation[];
   focusAreas?: string[];
-  technikerKrankenkasseAccepted?: boolean;
-  barmerAccepted?: boolean;
-  [key: string]: any;
+  yearsOfExperience?: number;
+  // [key: string]: any;  // ← consider removing if you can
 };
 
 export type Doctor = {
