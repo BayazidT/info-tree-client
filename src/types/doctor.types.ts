@@ -24,6 +24,9 @@ export type Doctor = {
   gender?: 'M' | 'F' | 'O' | string;
   address?: string;
   cityId?: number;
+  departmentId?: number;
+  departmentNameBn?: string;
+  departmentNameEn?: string;
   cityName?: string;
   categoryId?: number;
   privatePatientsOnly?: boolean;

@@ -11,6 +11,8 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
     const extra = doctor.extraAttributes ?? {}; 
     const hospitals = extra.hospitals ?? [];
     const focusAreas = extra.focusAreas ?? [];
+    const departmentNameEn = doctor.departmentNameEn;;
+    const departmentNameBn = doctor.departmentNameBn;
     const patientReviewsAvg = extra.patientReviewsAvg; 
     const primaryHospital = hospitals[0];
 
@@ -27,6 +29,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
         {/* Specialties */}
         {focusAreas.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-5">
+             { departmentNameBn || departmentNameEn || 'বিভাগ নেই' } : 
             {focusAreas.map((area, i) => (
               <span
                 key={i}
