@@ -15,7 +15,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const isLoadingProfile = tokens && !user;
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
   if (isLoadingProfile) {

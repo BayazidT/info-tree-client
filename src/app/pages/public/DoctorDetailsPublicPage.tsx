@@ -77,6 +77,8 @@ export default function DoctorDetailsPublicPage() {
     title,
     address,
     cityName,
+    departmentNameEn,
+    departmentNameBn,
     telemedicineAvailable,
     acceptsNewPatients,
     appointmentUrl,
@@ -120,12 +122,13 @@ export default function DoctorDetailsPublicPage() {
 
                 <div className="flex-1">
                   <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-                    {title ? `${title} ` : ''}
+                    {/* {title ? `${title} ` : ''} */}
                     {fullName}
                   </h1>
 
                   {focusAreas.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
+                      { departmentNameBn || departmentNameEn || 'বিভাগ নেই' } : 
                       {focusAreas.map((area, i) => (
                         <span
                           key={i}

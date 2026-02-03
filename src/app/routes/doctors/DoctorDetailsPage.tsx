@@ -82,6 +82,8 @@ useEffect(() => {
         address: rest.address ?? "",
         cityName: rest.cityName ?? "",
         categoryId: rest.categoryId ?? 0,
+        departmentNameEn: rest.departmentNameEn ?? "",
+        departmentNameBn: rest.departmentNameBn ?? "",
         privatePatientsOnly: rest.privatePatientsOnly ?? false,
         acceptsNewPatients: rest.acceptsNewPatients ?? false,
         telemedicineAvailable: rest.telemedicineAvailable ?? false,
