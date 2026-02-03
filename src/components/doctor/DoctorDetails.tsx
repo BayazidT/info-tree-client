@@ -25,6 +25,8 @@ export type Doctor = {
     address?: string;
     cityName?: string;
     categoryId?: number;
+    departmentNameEn?: string;
+    departmentNameBn?: string;
     privatePatientsOnly?: boolean;
     acceptsNewPatients?: boolean;
     telemedicineAvailable?: boolean;
@@ -53,6 +55,8 @@ export default function DoctorDetails({ doctor }: Props) {
         address,
         cityName,
         categoryId,
+        departmentNameEn,
+        departmentNameBn,
         privatePatientsOnly,
         acceptsNewPatients,
         telemedicineAvailable,
@@ -67,7 +71,7 @@ export default function DoctorDetails({ doctor }: Props) {
         <div>
             <section className="mb-6">
                 <nav className="mb-4 text-sm" aria-label="Breadcrumb">
-                    <a href="/doctors" className="inline-flex items-center text-sky-600 hover:underline">
+                    <a href="/admin/doctors" className="inline-flex items-center text-sky-600 hover:underline">
                         <svg
                             className="w-4 h-4 mr-2"
                             fill="none"

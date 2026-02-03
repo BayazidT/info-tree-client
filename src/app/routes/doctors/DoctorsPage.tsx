@@ -4,12 +4,16 @@ import Card from "@/components/ui/Card";
 import { createDoctor, getDoctors } from "@/api/doctorApi";
 import type { Doctor, PaginatedResponse } from "@/types/doctor.types";
 import { useNavigate } from "react-router-dom";
+import { getDoctorDepartments } from "@/api/doctorDepartmentApi";
+import { DoctorDepartment } from "@/types/doctorDepartment.typs";
+import { set } from "date-fns";
 export default function DoctorPage(): JSX.Element {
   const navigate = useNavigate();
   const [pageData, setPageData] = useState<PaginatedResponse<Doctor> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [department, setDepartment] = useState<DoctorDepartment[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 10;
@@ -52,6 +56,7 @@ useEffect(() => {
 
   useEffect(() => {
     fetchDoctors();
+    fetchDoctorDepartments()
   }, [currentPage]);
 
   const fetchDoctors = async () => {
@@ -69,7 +74,15 @@ useEffect(() => {
       setLoading(false);
     }
   };
-
+const fetchDoctorDepartments = async () => {
+    try {
+      const departments = await getDoctorDepartments();
+      setDepartment(departments);
+      console.log('Doctor Departments:', departments);
+    } catch (err) {
+      console.error('Failed to fetch doctor departments:', err);
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       try {
@@ -168,6 +181,18 @@ useEffect(() => {
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="px-4 py-2 border rounded-lg"
             />
+            <select
+              value={formData.departmentId ?? ""}
+              onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
+              className="px-4 py-2 border rounded-lg text-gray-800 bg-white"
+          >
+              <option value="">Department</option>
+              {department.map((dept) => (
+                  <option key={dept.id} value={dept.id} className="text-gray-800">
+                      {dept.nameBn || dept.nameEn}
+                  </option>
+              ))}
+          </select>
             <input
                 type="text"
                 required
@@ -192,7 +217,7 @@ useEffect(() => {
                 onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                 className="px-4 py-2 border rounded-lg"
             >
-                <option value="">Gender (optional)</option>
+                <option value="">Gender</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
                 <option value="other">Other</option>
@@ -212,7 +237,7 @@ useEffect(() => {
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 className="px-4 py-2 border rounded-lg"
             />
-
+           
             {/* Extra attributes */}
             <input
                 type="text"
@@ -366,7 +391,7 @@ useEffect(() => {
                   <td className="px-4 py-3">{d.telemedicineAvailable ? "Yes" : "No"}</td>
                   <td className="px-6 py-5 text-right flex justify-end gap-2">
                             <button
-                                onClick={() => navigate(`/doctor/${d.id}`)}
+                                onClick={() => navigate(`/admin/doctors/${d.id}`)}
                               className="text-sky-600 hover:bg-sky-50 p-3 rounded-lg transition"
                               title="View details"
                             >

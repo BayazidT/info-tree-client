@@ -72,11 +72,15 @@ export default function App() {
           {/* <Route path="/contact" element={<ContactPage />} /> */}
 
           {/* Login is usually separate or in public layout */}
-          <Route path="/login" element={<LoginPage />} />
+          {/* <Route path="/login" element={<LoginPage />} /> */}
 
           {/* Optional: public doctor detail, emergency detail, etc. */}
           <Route path="/doctors/:id" element={<DoctorDetailsPublicPage />} />
+
+          
         </Route>
+        {/* ─── Root redirect ──────────────────────────────────────── */}
+        <Route path="admin/login" element={<LoginPage />} />
 
         {/* ─── Admin / Protected section ───────────────────────────── */}
         <Route
@@ -87,6 +91,7 @@ export default function App() {
             </ProtectedRoute>
           }
         >
+
           <Route index element={<Navigate to="dashboard" replace />} />
 
           <Route
@@ -145,6 +150,7 @@ export default function App() {
               </Suspense>
             }
           />
+           
         </Route>
 
         {/* ─── Fallbacks ───────────────────────────────────────────── */}

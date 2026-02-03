@@ -117,11 +117,7 @@ export default function LoginPage() {
 
           {/* Demo Credentials */}
           <div className="mt-8 text-center text-sm text-gray-500">
-            <p>Demo credentials:</p>
-            <p className="font-medium">
-              Username: <span className="text-sky-700">admin</span> | Password:{' '}
-              <span className="text-sky-700">123</span>
-            </p>
+            
           </div>
         </div>
 

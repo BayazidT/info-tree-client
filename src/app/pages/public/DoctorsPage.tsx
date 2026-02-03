@@ -37,7 +37,7 @@ export default function DoctorsPage() {
 
     fetchDoctorsList();
   }, [currentPage, searchTerm]);
-
+  
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setCurrentPage(0); // reset to first page on new search
